@@ -140,11 +140,15 @@ try {
   console.log('PASS: Page tools type into textareas, select dropdowns, scroll, read visible text, and protect passwords.');
 
   await panel.locator('#task').fill('Search the collection for design and report the result.');
+  await panel.locator('#completion-options > summary').click();
+  await panel.locator('#success-criteria').fill('Found 3 articles for design');
   await panel.locator('#run').click();
   await panel.locator('#answer').waitFor({ state: 'visible', timeout: 20000 });
   assert.equal(await fixture.locator('#query').inputValue(), 'design');
   assert.equal(await fixture.locator('#result').innerText(), 'Found 3 articles for design');
   assert.match(await panel.locator('#answer-text').innerText(), /Found 3 articles/);
+  assert.equal(await panel.locator('#session-status').innerText(), 'VERIFIED');
+  assert.match(await panel.locator('#goal-checks').innerText(), /Found 3 articles for design/);
   assert.equal(requests[0].model, 'qwen3.5:0.8b'); assert.equal(requests[0].think, false);
   assert.ok(requests.every(request => !JSON.stringify(request).includes('NEVER_REVEAL_THIS')));
   await panel.screenshot({ path: join(artifacts, 'orbit-complete.png'), fullPage: true });

@@ -1,0 +1,7 @@
+{
+  "time": "2026-10-16T02:53:29.198Z",
+  "passed": 6,
+  "browserIntegration": "web adapter; native extension APIs UNVERIFIED",
+  "model": "fixture Ollama API; not real Qwen inference",
+  "errors": []
+}

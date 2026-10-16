@@ -1,0 +1,12 @@
+{
+  "startedAt": "2026-10-16T02:40:10.684Z",
+  "mode": "live-model",
+  "integration": "Real Chromium DOM through an explicit Chrome API adapter; native extension APIs are not tested.",
+  "model": "qwen3.5:0.8b",
+  "status": "blocked",
+  "results": [],
+  "reason": "qwen3.5:0.8b is not installed in the configured Ollama server.",
+  "total": 0,
+  "passed": 0,
+  "passRate": null
+}

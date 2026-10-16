@@ -1,0 +1,210 @@
+{
+  "startedAt": "2026-10-16T02:46:34.651Z",
+  "mode": "deterministic-engine",
+  "integration": "Real Chromium DOM through an explicit Chrome API adapter; native extension APIs are not tested.",
+  "model": null,
+  "status": "passed",
+  "results": [
+    {
+      "name": "Accessible labels choose the correct field",
+      "category": "controls",
+      "passed": true,
+      "durationMs": 565
+    },
+    {
+      "name": "Textarea Unicode and multiline retention",
+      "category": "controls",
+      "passed": true,
+      "durationMs": 512
+    },
+    {
+      "name": "Select options by visible text",
+      "category": "controls",
+      "passed": true,
+      "durationMs": 501
+    },
+    {
+      "name": "Disabled options are rejected",
+      "category": "controls",
+      "passed": true,
+      "durationMs": 23
+    },
+    {
+      "name": "Read-only fields are never edited",
+      "category": "safety",
+      "passed": true,
+      "durationMs": 18
+    },
+    {
+      "name": "Password fields remain manual",
+      "category": "safety",
+      "passed": true,
+      "durationMs": 17
+    },
+    {
+      "name": "One-time codes remain manual",
+      "category": "safety",
+      "passed": true,
+      "durationMs": 18
+    },
+    {
+      "name": "Delayed field rejection cannot produce a success receipt",
+      "category": "verification",
+      "passed": true,
+      "durationMs": 1440
+    },
+    {
+      "name": "Unique controls recover after a DOM replacement",
+      "category": "recovery",
+      "passed": true,
+      "durationMs": 499
+    },
+    {
+      "name": "Framework-style rerenders retain typed values and record recovery",
+      "category": "recovery",
+      "passed": true,
+      "durationMs": 523
+    },
+    {
+      "name": "Ambiguous rerendered controls are not guessed",
+      "category": "recovery",
+      "passed": true,
+      "durationMs": 24
+    },
+    {
+      "name": "A changed button identity invalidates the old target",
+      "category": "recovery",
+      "passed": true,
+      "durationMs": 18
+    },
+    {
+      "name": "Changed form destinations invalidate old approvals",
+      "category": "safety",
+      "passed": true,
+      "durationMs": 18
+    },
+    {
+      "name": "An overlay blocks clicks on covered controls",
+      "category": "safety",
+      "passed": true,
+      "durationMs": 33
+    },
+    {
+      "name": "Open shadow roots support typing and readback",
+      "category": "controls",
+      "passed": true,
+      "durationMs": 509
+    },
+    {
+      "name": "Same-origin frame fields support verified typing",
+      "category": "controls",
+      "passed": true,
+      "durationMs": 539
+    },
+    {
+      "name": "A top-page overlay blocks frame interaction",
+      "category": "safety",
+      "passed": true,
+      "durationMs": 39
+    },
+    {
+      "name": "Nested scroll containers move independently",
+      "category": "controls",
+      "passed": true,
+      "durationMs": 542
+    },
+    {
+      "name": "Delayed click results are observed before confirmation",
+      "category": "verification",
+      "passed": true,
+      "durationMs": 975
+    },
+    {
+      "name": "No-op clicks stay explicitly unverified",
+      "category": "verification",
+      "passed": true,
+      "durationMs": 1441
+    },
+    {
+      "name": "Enter cannot submit without approval",
+      "category": "safety",
+      "passed": true,
+      "durationMs": 18
+    },
+    {
+      "name": "Approved Enter submits a form exactly once",
+      "category": "controls",
+      "passed": true,
+      "durationMs": 490
+    },
+    {
+      "name": "Tab moves focus to the next field",
+      "category": "controls",
+      "passed": true,
+      "durationMs": 490
+    },
+    {
+      "name": "Structured link extraction excludes hidden and script links",
+      "category": "research",
+      "passed": true,
+      "durationMs": 18
+    },
+    {
+      "name": "Structured tables retain real cell values",
+      "category": "research",
+      "passed": true,
+      "durationMs": 18
+    },
+    {
+      "name": "Read excludes hidden text and editable values",
+      "category": "research",
+      "passed": true,
+      "durationMs": 18
+    },
+    {
+      "name": "Labels and table extraction exclude nested editable and hidden values",
+      "category": "research",
+      "passed": true,
+      "durationMs": 18
+    },
+    {
+      "name": "Wait-for checks resolve only after text appears",
+      "category": "verification",
+      "passed": true,
+      "durationMs": 487
+    },
+    {
+      "name": "Absent assertions fail instead of claiming success",
+      "category": "verification",
+      "passed": true,
+      "durationMs": 17
+    },
+    {
+      "name": "Multi-step research and form task must meet completion criteria",
+      "category": "agent",
+      "passed": true,
+      "durationMs": 1011
+    },
+    {
+      "name": "Premature model completion is rejected against real page evidence",
+      "category": "agent",
+      "passed": true,
+      "durationMs": 51
+    },
+    {
+      "name": "Uncertain purchases are not replayed even when the model insists",
+      "category": "agent",
+      "passed": true,
+      "durationMs": 1452
+    }
+  ],
+  "finishedAt": "2026-10-16T02:46:47.501Z",
+  "total": 32,
+  "passed": 32,
+  "passRate": 1,
+  "wilson95": [
+    0.8928172849426366,
+    1
+  ],
+  "interpretation": "Engine regression scenarios include negative safety cases and scripted decisions. This is NOT model or end-to-end task accuracy."
+}

@@ -60,7 +60,7 @@ function updatePage(page) {
 }
 function updatePhase(state) {
   const phases = ['observing', 'planning', 'acting', 'done'];
-  const index = phases.indexOf(state === 'approval' ? 'acting' : state);
+  const index = phases.indexOf(['approval','verifying'].includes(state) ? 'acting' : state === 'reported' ? 'done' : state);
   $('phase-rail').classList.toggle('complete', state === 'done');
   $('phase-rail').querySelectorAll('[data-phase]').forEach((node, position) => {
     node.classList.toggle('current', position === index);
@@ -70,6 +70,7 @@ function updatePhase(state) {
 function setRunning(running) {
   $('run').hidden = running; $('stop').hidden = !running;
   $('task').disabled = running; $('refresh-page').disabled = running;
+  $('success-criteria').disabled = running;
   $('save-settings').disabled = running; $('new-task').hidden = running;
   $('header-new-task').disabled = running;
   $('keyboard-hint').hidden = running;
@@ -87,6 +88,7 @@ async function connect() {
     if (version !== connectionVersion) return;
     $('model-options').replaceChildren(...models.map(name => Object.assign(document.createElement('option'), { value: name })));
     if (!models.includes(settings.model)) throw new Error(`Ollama is running, but ${settings.model} is not installed. Run: ollama pull ${settings.model}`);
+    if (settings.recoveryModel && !models.includes(settings.recoveryModel)) throw new Error(`The recovery model ${settings.recoveryModel} is not installed. Choose an installed model or clear it.`);
     connected = true; $('connection').textContent = settings.model;
     $('connection-dot').className = 'dot connected'; $('connection-help').hidden = true;
     $('runtime-label').className = 'runtime-label ready'; $('runtime-label').textContent = 'Ready';
@@ -138,7 +140,7 @@ function activity(title, description = '', warning = false, detail = '') {
 function emit(event) {
   transcript.push({ time: new Date().toISOString(), ...event });
   if (event.type === 'state') {
-    const labels = { observing: 'Reading the page', planning: 'Choosing the next step', acting: 'Working on it', approval: 'Waiting for your approval' };
+    const labels = { observing: 'Reading the page', planning: 'Choosing the next step', acting: 'Acting and checking the result', verifying: 'Checking completion criteria', approval: 'Waiting for your approval' };
     $('status').textContent = labels[event.state] || event.state;
     $('step-counter').textContent = `${event.step} / ${event.limit} steps`;
     $('status-bar').className = `status-bar${event.state === 'approval' ? ' idle' : ''}`;
@@ -150,28 +152,48 @@ function emit(event) {
     updatePage(event.page);
   } else if (event.type === 'action' && event.action.action !== 'done') {
     const a = event.action;
-    const labels = { click: 'Click a control', type: 'Fill a field', select: 'Choose an option', scroll: 'Explore the page', navigate: 'Open a page', back: 'Go back', read: 'Read the page', wait: 'Wait for the page' };
+    const labels = { click: 'Click a control', type: 'Fill a field', select: 'Choose an option', scroll: 'Explore the page', navigate: 'Open a page', back: 'Go back', read: 'Read the page', extract: 'Extract structured information', press: 'Use a keyboard control', assert: 'Check page evidence', wait_for: 'Wait for an expected result', wait: 'Wait for the page' };
     activity(`${event.step}. ${labels[a.action] || a.action}`, a.reason);
     $('activity-count').textContent = String(event.step);
   } else if (event.type === 'result') {
     const last = $('activity').lastElementChild;
     if (last) {
       const details = document.createElement('details'); const summary = document.createElement('summary');
-      summary.textContent = 'View result'; const pre = document.createElement('pre'); pre.textContent = event.text;
+      summary.textContent = 'View evidence'; const pre = document.createElement('pre'); pre.textContent = `${event.text}\n\n${event.receipt?.evidence || ''}`;
       details.append(summary, pre); last.querySelector('.activity-content').append(details);
-      last.classList.add('complete');
-      last.querySelector('.activity-icon').replaceChildren(icon('m5 12 4 4 10-10'));
+      const confirmed = event.receipt?.status === 'verified';
+      last.classList.add(confirmed ? 'complete' : 'uncertain');
+      last.querySelector('.activity-icon').replaceChildren(icon(confirmed ? 'm5 12 4 4 10-10' : 'M12 7v6m0 4h.01'));
+      const badge = document.createElement('span'); badge.className = `receipt-badge ${confirmed ? 'confirmed' : 'uncertain'}`;
+      badge.textContent = confirmed ? 'Browser evidence confirmed' : event.receipt?.status === 'no_change' ? 'No change observed' : 'Outcome needs verification';
+      last.querySelector('.activity-content').append(badge);
     }
+    if (event.metrics) {
+      $('verified-count').textContent = event.metrics.verified;
+      $('uncertain-count').textContent = event.metrics.unverified;
+      $('recovered-count').textContent = event.metrics.recovered;
+    }
+  } else if (event.type === 'checks') {
+    $('goal-results').hidden = false;
+    $('goal-checks').replaceChildren(...event.checks.map(check => {
+      const li = document.createElement('li'); li.className = check.passed ? 'passed' : 'missing';
+      li.append(icon(check.passed ? 'm5 12 4 4 10-10' : 'm6 6 12 12M6 18 18 6'), document.createTextNode(check.text)); return li;
+    }));
   } else if (event.type === 'warning' || event.type === 'note') {
     activity(event.type === 'warning' ? 'Couldn’t complete that step' : 'A small adjustment', event.text, true);
   } else if (event.type === 'done') {
+    const main = $('main-content');
+    const following = main.scrollHeight - main.scrollTop - main.clientHeight < 200;
     $('answer').hidden = false; $('answer-text').textContent = event.answer;
     const declined = event.answer.startsWith('Stopped.');
-    $('status').textContent = declined ? 'Stopped by you' : 'Task complete';
-    $('status-bar').className = `status-bar idle${declined ? '' : ' complete'}`;
-    $('session-status').textContent = declined ? 'STOPPED' : 'COMPLETE';
+    const verified = event.completion === 'criteria_verified';
+    $('status').textContent = declined ? 'Stopped by you' : verified ? 'Completion checks passed' : 'Result ready for review';
+    $('status-bar').className = `status-bar idle${verified ? ' complete' : ''}`;
+    $('session-status').textContent = declined ? 'STOPPED' : verified ? 'VERIFIED' : 'REPORTED';
+    $('completion-note').textContent = declined ? 'The requested action was not performed.' : verified ? 'Your specified page-text criteria were independently checked.' : 'The model reported this result. Add completion criteria to verify a specific page outcome.';
     $('step-counter').textContent = `${event.steps} action${event.steps === 1 ? '' : 's'}`;
-    if (!declined) updatePhase('done');
+    if (!declined) updatePhase(verified ? 'done' : 'reported');
+    if (following) requestAnimationFrame(() => $('answer').scrollIntoView({ block: 'nearest' }));
   }
 }
 
@@ -203,14 +225,17 @@ async function startTask() {
   if (!tabId) return toast('Open a regular website, then choose “Use current page”.');
   controller = new AbortController();
   transcript = [{ type: 'task', task, model: settings.model, time: new Date().toISOString() }];
-  $('activity').replaceChildren(); $('answer').hidden = true;
+  $('activity').replaceChildren(); $('answer').hidden = true; $('goal-results').hidden = true;
+  for (const name of ['verified-count','uncertain-count','recovered-count']) $(name).textContent = '0';
   $('activity-tab').disabled = false; $('activity-count').textContent = '0';
   $('steps-disclosure').open = true;
+  $('completion-options').open = false;
   closeSettings(); $('status-bar').className = 'status-bar';
   setView('activity');
   setRunning(true);
   try {
-    await runAgent({ task, settings: { ...settings }, driver: createDriver(tabId), signal: controller.signal, emit, approve });
+    await runAgent({ task, settings: { ...settings }, driver: createDriver(tabId, settings), signal: controller.signal, emit, approve,
+      successCriteria: $('success-criteria').value.split('\n').map(text => text.trim()).filter(Boolean) });
   } catch (error) {
     const stopped = controller.signal.aborted;
     const message = stopped ? 'Stopped. No further actions will be taken. Actions already completed are not undone.' : error.message;
@@ -229,6 +254,10 @@ $('run').addEventListener('click', startTask);
 $('stop').addEventListener('click', () => controller?.abort(new DOMException('Stopped by user', 'AbortError')));
 $('task').addEventListener('keydown', event => { if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') { event.preventDefault(); startTask(); } });
 $('task').addEventListener('input', updateTaskCount);
+$('success-criteria').addEventListener('input', () => {
+  const count = $('success-criteria').value.split('\n').filter(text => text.trim()).length;
+  $('criteria-count').textContent = count ? `${count} check${count === 1 ? '' : 's'}` : 'Optional';
+});
 $('workspace-tab').addEventListener('click', () => setView('workspace'));
 $('activity-tab').addEventListener('click', () => setView('activity'));
 $('settings-toggle').addEventListener('click', showSettings);
@@ -253,9 +282,11 @@ $('save-settings').addEventListener('click', async () => {
     const endpoint = validateEndpoint($('endpoint').value.trim());
     const model = $('model').value.trim();
     const maxSteps = Number($('max-steps').value);
+    const recoveryModel = $('recovery-model').value.trim();
     if (!/^[a-zA-Z0-9_.:/-]{1,150}$/.test(model)) throw new Error('Enter a valid Ollama model name.');
     if (!Number.isInteger(maxSteps) || maxSteps < 1 || maxSteps > 30) throw new Error('Choose a step limit between 1 and 30.');
-    settings = { endpoint, model, maxSteps, context: Number($('context').value) };
+    if (recoveryModel && !/^[a-zA-Z0-9_.:/-]{1,150}$/.test(recoveryModel)) throw new Error('Enter a valid recovery model name or leave it empty.');
+    settings = { ...settings, endpoint, model, recoveryModel, maxSteps, context: Number($('context').value) };
     await chrome.storage.local.set({ settings });
     $('save-settings').disabled = true;
     await connect();
@@ -269,7 +300,8 @@ document.querySelectorAll('.suggestion').forEach(button => button.addEventListen
 }));
 async function resetTask() {
   if (controller) return;
-  $('task').value = ''; updateTaskCount(); transcript = [];
+  $('task').value = ''; $('success-criteria').value = ''; updateTaskCount(); transcript = [];
+  $('criteria-count').textContent = 'Optional'; $('completion-options').open = false;
   $('activity').replaceChildren(); $('answer').hidden = true;
   $('activity-tab').disabled = true; $('activity-count').textContent = '0';
   $('new-task').hidden = true;
@@ -304,6 +336,7 @@ async function init() {
   settings = { ...DEFAULT_SETTINGS, ...stored.settings };
   $('endpoint').value = settings.endpoint; $('model').value = settings.model;
   $('max-steps').value = settings.maxSteps; $('context').value = settings.context;
+  $('recovery-model').value = settings.recoveryModel || '';
   $('origin-command').textContent = `OLLAMA_ORIGINS="chrome-extension://${chrome.runtime.id}" ollama serve`;
   $('access-row').hidden = await chrome.permissions.contains({ origins: ['http://*/*', 'https://*/*'] });
   await Promise.all([refreshPage(), connect()]);

@@ -8,6 +8,7 @@ export async function* ndjson(body) {
     while (true) {
       const { done, value } = await reader.read();
       buffer += done ? decoder.decode() : decoder.decode(value, { stream: true });
+      if (buffer.length > 1000000) throw new Error('Model response was too large.');
       let end;
       while ((end = buffer.indexOf('\n')) !== -1) {
         const line = buffer.slice(0, end).trim();
@@ -42,13 +43,26 @@ export async function nextAction(settings, messages, signal, onProgress = () => 
   const timeout = AbortSignal.timeout(180000);
   const combined = signal ? AbortSignal.any([signal, timeout]) : timeout;
   try {
-    const response = await fetch(`${validateEndpoint(settings.endpoint)}/api/chat`, {
-      method: 'POST', credentials: 'omit', redirect: 'error', signal: combined,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: settings.model, messages, stream: true, think: false,
-        format: ACTION_SCHEMA, keep_alive: '5m',
-        options: { temperature: 0, num_ctx: settings.context, num_predict: 768, repeat_penalty: 1.1 } }),
-    });
+    let response;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      response = await fetch(`${validateEndpoint(settings.endpoint)}/api/chat`, {
+        method: 'POST', credentials: 'omit', redirect: 'error', signal: combined,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: settings.model, messages, stream: true, think: false,
+          format: ACTION_SCHEMA, keep_alive: '5m',
+          options: { temperature: 0, num_ctx: settings.context, num_predict: 768, repeat_penalty: 1.1 } }),
+      });
+      if (![429,502,503,504].includes(response.status) || attempt === 1) break;
+      const rawDelay = Number(response.headers.get('Retry-After'));
+      const waitMs = Number.isFinite(rawDelay) && rawDelay > 0 ? Math.min(rawDelay * 1000, 3000) : 500;
+      await response.body?.cancel();
+      await new Promise((resolve, reject) => {
+        const abort = () => { clearTimeout(timer); reject(combined.reason); };
+        const timer = setTimeout(() => { combined.removeEventListener('abort', abort); resolve(); }, waitMs);
+        combined.addEventListener('abort', abort, { once: true });
+        if (combined.aborted) abort();
+      });
+    }
     if (!response.ok) {
       let detail = '';
       try { detail = (await response.json()).error || ''; } catch {}

@@ -102,7 +102,10 @@ function fixtureAgent(sequence, overrides = {}) {
 
 test('agent observes, acts, carries results forward, and returns final answer', async () => {
   const fixture = fixtureAgent([action('type', 1, 'tea'), action('click', 2), action('done', 0, 'Found tea')]);
-  assert.deepEqual(await runAgent(fixture.options), { answer: 'Found tea', steps: 2 });
+  const result = await runAgent(fixture.options);
+  assert.equal(result.answer, 'Found tea'); assert.equal(result.steps, 2);
+  assert.equal(result.completion, 'model_reported');
+  assert.equal(result.metrics.verified, 0, 'A legacy driver must not manufacture verification evidence');
   assert.deepEqual(fixture.calls.map(a => a.action), ['type', 'click']);
   assert.equal(fixture.events.filter(e => e.type === 'page').length, 3);
 });
@@ -136,4 +139,80 @@ test('malformed JSON gets one repair request', async () => {
     return action('done', 0, 'Repaired');
   } });
   assert.equal((await runAgent(fixture.options)).answer, 'Repaired'); assert.equal(count, 2);
+});
+
+test('advanced action schema rejects invalid keyboard, extraction, and empty assertions', () => {
+  for (const item of [action('press', 1, 'F12'), action('extract', 0, 'cookies'), action('assert'), action('click')]) assert.throws(() => parseAction(JSON.stringify(item)));
+  assert.equal(parseAction(JSON.stringify(action('press', 1, 'Enter'))).value, 'Enter');
+  assert.equal(inspectAction(action('press', 1, 'Enter'), page).approval, true);
+  assert.throws(() => inspectAction(action('type', 1, 'x'), { ...page, elements: [{ ...page.elements[0], readOnly: true }] }), /read-only/);
+});
+
+test('completion is rejected until independently checked page criteria pass', async () => {
+  let checks = 0;
+  const fixture = fixtureAgent([action('done', 0, 'Complete')]);
+  fixture.options.successCriteria = ['Result exists'];
+  fixture.options.driver.check = async () => [{ text: 'Result exists', passed: ++checks > 1 }];
+  const result = await runAgent(fixture.options);
+  assert.equal(result.completion, 'criteria_verified'); assert.equal(checks, 2);
+  assert.equal(fixture.events.filter(event => event.type === 'done').length, 1);
+});
+
+test('three unsupported completion claims stop with an incomplete task', async () => {
+  const fixture = fixtureAgent([action('done', 0, 'All done')]);
+  fixture.options.successCriteria = ['Missing result'];
+  fixture.options.driver.check = async () => [{ text: 'Missing result', passed: false }];
+  await assert.rejects(runAgent(fixture.options), /incomplete/);
+  assert.equal(fixture.events.filter(event => event.type === 'done').length, 0);
+});
+
+test('an approved consequential action is never replayed after an uncertain result', async () => {
+  let count = 0, approvals = 0;
+  const fixture = fixtureAgent([action('click', 3)], { approve: async () => { approvals++; return true; } });
+  fixture.options.driver.execute = async () => { count++; return { status: 'unverified', summary: 'Sent once', evidence: 'Unknown outcome' }; };
+  await assert.rejects(runAgent(fixture.options), /repeated|unsuccessful/);
+  assert.equal(count, 1); assert.equal(approvals, 1);
+});
+
+test('the configured recovery model is used for format repair', async () => {
+  const models = [];
+  const fixture = fixtureAgent([], { settings: { ...DEFAULT_SETTINGS, recoveryModel: 'qwen3.5:4b' }, decide: async settings => {
+    models.push(settings.model);
+    if (models.length === 1) throw new Error('The model returned invalid JSON.');
+    return action('done', 0, 'Repaired');
+  } });
+  await runAgent(fixture.options);
+  assert.deepEqual(models, ['qwen3.5:0.8b', 'qwen3.5:4b']);
+});
+
+test('large multilingual observations are bounded without corrupting JSON', () => {
+  const large = { ...page, text: '世界'.repeat(10000), elements: Array.from({length:60},(_,i)=>({id:i+1,kind:'select',label:'選択'.repeat(40),options:Array.from({length:20},(_,j)=>({value:`long-option-${j}`.repeat(20),text:'項目'.repeat(50)}))})) };
+  const encoded = observationText(large, 3000);
+  assert.ok(new TextEncoder().encode(encoded).length <= 3000);
+  assert.ok(JSON.parse(encoded).limitations.contextClipped);
+});
+
+test('transient model-server overload retries once before a browser action is chosen', async () => {
+  const original = globalThis.fetch; let requests = 0;
+  try {
+    globalThis.fetch = async () => {
+      if (++requests === 1) return new Response('{"error":"busy"}', {status:503});
+      return new Response(JSON.stringify({message:{content:JSON.stringify(action('done',0,'Ready'))},done:true})+'\n');
+    };
+    assert.equal((await nextAction(DEFAULT_SETTINGS, [])).value,'Ready'); assert.equal(requests,2);
+  } finally { globalThis.fetch = original; }
+});
+
+test('cancelling a model retry prevents the second request', async () => {
+  const original = globalThis.fetch; const controller = new AbortController(); let requests = 0;
+  try {
+    globalThis.fetch = async () => { requests++; controller.abort(new DOMException('Cancelled','AbortError')); return new Response('{}',{status:503}); };
+    await assert.rejects(nextAction(DEFAULT_SETTINGS, [], controller.signal),/Cancelled/); assert.equal(requests,1);
+  } finally { globalThis.fetch = original; }
+});
+
+test('an empty verifier response cannot satisfy nonempty completion criteria', async () => {
+  const fixture = fixtureAgent([action('done',0,'Complete')]);
+  fixture.options.successCriteria=['Required result']; fixture.options.driver.check=async()=>[];
+  await assert.rejects(runAgent(fixture.options),/incomplete completion checks/);
 });
