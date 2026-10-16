@@ -40,6 +40,7 @@ Try: “Search this site for wireless keyboards and report the first three resul
 
 ## What it does
 
+- A focused Workspace for composing tasks, a separate Activity view with live stages, and a connection settings sheet with keyboard support.
 - Reads visible page text and up to 40 visible interactive controls per step.
 - Types into text fields and textareas, chooses dropdown options, clicks links and buttons, scrolls, goes back, opens web addresses, and extracts page text.
 - Keeps the task pinned to its original tab. Ordinary links that would open another tab stay in that tab.
@@ -85,6 +86,8 @@ ORBIT_WEB_HARNESS=1 npm run test:browser
 That mode serves the same panel and modules over HTTP and adapts Chrome APIs to a real browser fixture through Playwright. It verifies DOM actions and agent/UI integration; **it does not verify native extension installation, side-panel behavior, or Chrome permission prompts**. It never changes managed browser policies.
 
 Tests cover schema decoding, streaming, approval gates, secret fields, cancellation, loop limits, typing, dropdowns, page reading, and form submission. Screenshots and a machine-readable result are written to `test-results/`.
+
+Set `ORBIT_TEST_WIDTH=320` to check the narrow Chrome panel layout with the same browser scenarios. The default is 420 pixels. [See the narrow panel layout](docs/interface-narrow.png).
 
 `npm run package` writes `dist/orbit-chrome-0.1.0.zip`. Chrome loads it after extraction; this is not a signed Chrome Web Store package.
 

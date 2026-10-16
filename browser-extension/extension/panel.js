@@ -13,6 +13,12 @@ let toastTimer;
 let connectionVersion = 0;
 
 function toast(message) {
+  if ($('settings').open) {
+    $('settings-feedback').textContent = message;
+    $('settings-feedback').dataset.tone = 'info';
+    $('settings-feedback').hidden = false;
+    return;
+  }
   $('toast').textContent = message; $('toast').hidden = false;
   clearTimeout(toastTimer); toastTimer = setTimeout(() => { $('toast').hidden = true; }, 6000);
 }
@@ -26,6 +32,7 @@ function showError(message) {
   $('connection-help').hidden = false; $('connection-error').textContent = message;
   if ($('settings').open) {
     $('settings-feedback').textContent = message;
+    $('settings-feedback').dataset.tone = 'error';
     $('settings-feedback').hidden = false;
   }
 }
@@ -254,7 +261,7 @@ $('save-settings').addEventListener('click', async () => {
     await connect();
     if (connected) { closeSettings(); toast('Your local model is connected.'); }
   } catch (error) {
-    $('settings-feedback').textContent = error.message; $('settings-feedback').hidden = false;
+    $('settings-feedback').textContent = error.message; $('settings-feedback').dataset.tone = 'error'; $('settings-feedback').hidden = false;
   } finally { $('save-settings').disabled = Boolean(controller); }
 });
 document.querySelectorAll('.suggestion').forEach(button => button.addEventListener('click', () => {
@@ -292,6 +299,7 @@ document.addEventListener('visibilitychange', () => {
 });
 
 async function init() {
+  if (/Mac|iPhone|iPad/.test(navigator.platform)) $('keyboard-hint').querySelector('kbd').textContent = 'Cmd';
   const stored = await chrome.storage.local.get('settings');
   settings = { ...DEFAULT_SETTINGS, ...stored.settings };
   $('endpoint').value = settings.endpoint; $('model').value = settings.model;

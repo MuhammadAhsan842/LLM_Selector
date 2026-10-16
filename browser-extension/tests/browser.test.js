@@ -63,7 +63,7 @@ try {
   writeFileSync(manifestPath, JSON.stringify(manifest));
   context = await chromium.launchPersistentContext(join(temporary, 'profile'), {
     executablePath: process.env.CHROMIUM_PATH || (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined),
-    channel: 'chromium', headless: true, viewport: { width: 420, height: 940 },
+    channel: 'chromium', headless: true, viewport: { width: Number(process.env.ORBIT_TEST_WIDTH) || 420, height: 940 },
     ignoreDefaultArgs: ['--disable-extensions'],
     args: ['--no-sandbox', '--disable-dev-shm-usage', '--no-proxy-server', '--host-resolver-rules=MAP fixture.orbit.test 127.0.0.1',
       `--disable-extensions-except=${extensionPath}`, `--load-extension=${extensionPath}`],
