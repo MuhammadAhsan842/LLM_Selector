@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Orbit · Your browser, a little lighter</title>
+  <link rel="stylesheet" href="panel.css">
+</head>
+<body data-view="workspace">
+  <header class="topbar">
+    <div class="brand" aria-label="Orbit"><span class="brand-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="8"/><ellipse cx="16" cy="16" rx="15" ry="5.5" transform="rotate(-38 16 16)"/><circle class="satellite" cx="25.5" cy="6.8" r="2"/></svg></span><span>orbit<span class="brand-period">.</span></span></div>
+    <div class="header-actions">
+      <button id="header-new-task" class="icon-button" title="New task" aria-label="New task"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+      <button id="export" class="icon-button" title="Export this session" aria-label="Export session"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 16v4h14v-4"/></svg></button>
+      <span class="header-divider"></span>
+      <button id="settings-toggle" class="icon-button" title="Settings" aria-label="Settings" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 3-1 3-3 1 1 3-2 2 2 2-1 3 3 1 1 3h6l1-3 3-1-1-3 2-2-2-2 1-3-3-1-1-3Z"/><circle cx="12" cy="12" r="3"/></svg></button>
+    </div>
+  </header>
+  <nav class="workspace-nav" aria-label="Workspace navigation">
+    <div class="view-switch"><button id="workspace-tab" class="view-button active" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5Z"/></svg>Workspace</button><button id="activity-tab" class="view-button" aria-pressed="false" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg>Activity<span id="activity-count" class="count-badge">0</span></button></div>
+    <span id="runtime-label" class="runtime-label">Connecting</span>
+  </nav>
+  <main id="main-content">
+    <section class="page-context" aria-label="Selected browser page">
+      <div class="site-icon" id="site-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M4 12h16M12 4c5 5 5 11 0 16-5-5-5-11 0-16Z"/></svg></div>
+      <div class="page-context-text"><div class="context-overline"><span>PAGE CONTEXT</span><span class="context-tag">Current tab</span></div><p id="page-title">Open a website to get started</p><span id="page-domain" class="page-domain">Choose a page for your task</span></div>
+      <button id="refresh-page" class="icon-button" aria-label="Use current page" title="Use current page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M6.1 7a7 7 0 0 1 11.7-1L20 9M4 15l2.2 3A7 7 0 0 0 18 17"/></svg></button>
+    </section>
+    <section id="connection-help" class="connection-help" hidden>
+      <span class="notice-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 4v5m8-5v5M6 9h12v3a6 6 0 0 1-12 0Zm6 9v4"/></svg></span>
+      <div><strong>Let’s connect your model.</strong><p id="connection-error"></p><button id="open-setup" class="text-button">Open connection settings <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button></div>
+    </section>
+    <section class="hero" id="welcome">
+      <div class="eyebrow"><span class="eyebrow-line"></span> A LITTLE SPACE TO DO MORE</div>
+      <h1>Your browser.<br><span>Off your to-do list.</span></h1>
+      <p>Set a goal. Let Orbit take it<br>one thoughtful step at a time.</p>
+      <svg class="hero-orbit" viewBox="0 0 140 130" aria-hidden="true">
+        <defs><radialGradient id="orb-fill" cx="30%" cy="25%" r="85%"><stop offset="0" stop-color="#b9b5ff"/><stop offset=".4" stop-color="#8176f1"/><stop offset="1" stop-color="#4b3daf"/></radialGradient><radialGradient id="orb-glow"><stop stop-color="#b3a6ff" stop-opacity=".2"/><stop offset="1" stop-color="#b3a6ff" stop-opacity="0"/></radialGradient><linearGradient id="ring-fill"><stop stop-color="#9484e0"/><stop offset=".5" stop-color="#ded8fa"/><stop offset="1" stop-color="#8876d4"/></linearGradient></defs>
+        <circle cx="70" cy="64" r="64" fill="url(#orb-glow)"/><ellipse cx="70" cy="66" rx="59" ry="18" transform="rotate(-30 70 66)" fill="none" stroke="#ded8ee" stroke-width="1"/><circle cx="70" cy="65" r="30" fill="url(#orb-fill)"/><path d="M18 82c-12 25 41 11 70-6 31-18 50-39 36-42" fill="none" stroke="url(#ring-fill)" stroke-width="4" stroke-linecap="round"/><circle cx="22" cy="88" r="5" fill="#c6b9f0"/><circle cx="113" cy="26" r="3" fill="#8980d4"/><path d="M32 27v10m-5-5h10M111 98v7m-3.5-3.5h7" stroke="#b1a9d6" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+    </section>
+    <section class="workspace" aria-label="Task composer">
+      <div class="composer-heading"><span class="composer-spark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5Z"/></svg></span><label for="task">What are we getting done?</label><span id="task-count" class="task-count" aria-live="off">0 / 4000</span></div>
+      <textarea id="task" rows="4" maxlength="4000" aria-label="Your task" placeholder="Tell me what you’d like to get done…"></textarea>
+      <div class="composer-footer"><span id="keyboard-hint" class="keyboard-hint"><kbd>Ctrl</kbd><kbd>Enter</kbd> to start</span><button id="run" class="primary">Start task<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg></button><button id="stop" class="stop" hidden><span class="stop-square" aria-hidden="true"></span> Stop task</button></div>
+    </section>
+    <p id="composer-note" class="composer-note"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 5 8 9 8 9s8-4 8-9V6ZM8 12l3 3 5-6"/></svg>You review sensitive actions before they happen.</p>
+    <div id="access-row" class="access-row"><div><strong>A little permission to get started</strong><span>Let Orbit read and interact with your pages.</span></div><button id="grant-access" class="text-button">Enable website access<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg></button></div>
+    <section id="suggestions" class="suggestions" aria-label="Try a task">
+      <div class="section-head"><h2>A little inspiration</h2><span>FOR THIS PAGE</span></div>
+      <div class="suggestion-grid">
+        <button class="suggestion" data-task="Summarize this page in five concise bullet points. Do not navigate away."><span class="suggestion-icon lavender"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h14M5 10h14M5 14h9M5 18h6"/></svg></span><strong>Get the gist</strong><small>A shorter version<br>of the whole story.</small><svg class="card-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 17 10-10M7 7h10v10"/></svg></button>
+        <button class="suggestion" data-task="Find the main links and useful next steps on this page. Report what each one does, without clicking them."><span class="suggestion-icon peach"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5M8 10.5h5M10.5 8v5"/></svg></span><strong>Find the useful bits</strong><small>Good links. Clear<br>next steps.</small><svg class="card-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 17 10-10M7 7h10v10"/></svg></button>
+        <button class="suggestion" data-task="Read this page and extract any prices, dates, or specifications into a concise comparison. Do not invent missing information."><span class="suggestion-icon mint"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 10h16M10 10v10"/></svg></span><strong>Bring it together</strong><small>Prices, dates, details.<br>All in one place.</small><svg class="card-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 17 10-10M7 7h10v10"/></svg></button>
+        <button class="suggestion" data-task="Read this page and explain what I can do here. Identify the main controls and give a short step-by-step guide. Do not click anything."><span class="suggestion-icon blue"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 5 6-2 4 3 6-2v15l-6 2-4-3-6 2Zm6-2v15m4-12v15"/></svg></span><strong>Show me around</strong><small>Make an unfamiliar<br>page feel familiar.</small><svg class="card-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 17 10-10M7 7h10v10"/></svg></button>
+      </div>
+    </section>
+    <section id="activity-section" class="activity-section" hidden aria-live="polite">
+      <div class="section-head"><div><h2>Every step, in plain sight.</h2><p>Follow along. Step in whenever you need.</p></div><span id="step-counter" class="step-counter"></span></div>
+      <div class="run-status-card"><div id="status-bar" class="status-bar"><span class="status-spinner" aria-hidden="true"></span><span id="status">Ready</span><span id="session-status" class="session-status">RUNNING</span></div><div id="phase-rail" class="phase-rail" aria-label="Task stages"><span data-phase="observing"><i></i>Read</span><span data-phase="planning"><i></i>Plan</span><span data-phase="acting"><i></i>Act</span><span data-phase="done"><i></i>Done</span></div></div>
+      <details id="steps-disclosure" class="steps-disclosure" open><summary><span>Activity log</span><span class="disclosure-chevron"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></span></summary><ol id="activity" class="activity"></ol></details>
+      <div id="approval" class="approval" hidden role="region" aria-label="Review action"><div class="approval-eyebrow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 5 8 9 8 9s8-4 8-9V6Z"/><path d="M12 8v5m0 3h.01"/></svg>WAITING FOR YOU</div><h3>A quick check before I continue.</h3><p id="approval-reason"></p><pre id="approval-detail"></pre><div class="approval-actions"><button id="deny" class="secondary">Decline & stop</button><button id="allow" class="primary">Approve once<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4 10-10"/></svg></button></div></div>
+      <div id="answer" class="answer" hidden><div class="answer-heading"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4 10-10"/></svg>HERE’S WHAT I FOUND</span><button id="copy-answer" class="icon-button" aria-label="Copy answer" title="Copy answer"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V4H4v12h4"/></svg></button></div><div id="answer-text"></div></div>
+      <button id="new-task" class="new-task-button" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Make room for the next thing</button>
+    </section>
+    <div class="workspace-signoff" id="workspace-signoff"><span></span>Little tasks. A lighter day.<span></span></div>
+  </main>
+  <footer class="model-footer"><span class="model-symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 2 2 5 5-2-2 5 5 2-5 2 2 5-5-2-2 5-2-5-5 2 2-5-5-2 5-2-2-5 5 2Z"/></svg></span><div class="model-information"><span class="model-label">YOUR LOCAL MODEL</span><button id="connection" title="Check Ollama connection">Connecting to Ollama</button></div><div class="local-status"><span id="connection-dot" class="dot"></span><span>On device</span></div></footer>
+  <dialog id="settings" class="settings" aria-labelledby="settings-title">
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <div class="sheet-header"><div><span class="eyebrow">MAKE IT YOURS</span><h2 id="settings-title">Your local workspace.</h2></div><button id="settings-close" class="icon-button" aria-label="Close settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg></button></div>
+    <p class="settings-intro">One connection. Your browser and your model.</p>
+    <div class="settings-fields"><label for="endpoint">Ollama address<span>Local connection</span></label><input id="endpoint" type="url" spellcheck="false" value="http://127.0.0.1:11434"><label for="model">Model<span>Choose an installed model</span></label><input id="model" list="model-options" spellcheck="false" value="qwen3.5:0.8b"><datalist id="model-options"></datalist></div>
+    <details class="advanced-settings"><summary>Fine-tune the workspace<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><div class="setting-grid"><div><label for="max-steps">Step limit</label><input id="max-steps" type="number" min="1" max="30" value="16"></div><div><label for="context">Context window</label><select id="context"><option value="4096">4,096 tokens</option><option value="8192" selected>8,192 tokens</option><option value="16384">16,384 tokens</option></select></div></div></details>
+    <div class="privacy-note"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v2"/></svg><div><strong>Right here, on your device.</strong><p>Tasks and page content go to your local Ollama server. No hosted backend. No analytics.</p></div></div>
+    <details class="setup-details"><summary>First time with Ollama?<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>Pull your model, then restart Ollama with this extension’s origin allowed.</p><code>ollama pull qwen3.5:0.8b</code><code id="origin-command"></code><button id="copy-command" class="text-button">Copy startup command<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V4H4v12h4"/></svg></button></details>
+    <div id="settings-feedback" class="settings-feedback" role="status" hidden></div>
+    <div class="sheet-footer"><button id="save-settings" class="primary">Save & connect<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg></button><p>You can change these anytime.</p></div>
+  </dialog>
+  <div id="toast" class="toast" role="status" hidden></div>
+  <script type="module" src="panel.js"></script>
+</body>
+</html>

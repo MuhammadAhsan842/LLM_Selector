@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "Orbit · Local Browser Agent",
+  "version": "0.1.0",
+  "description": "A local browser copilot built for small Qwen models. Read pages, automate tasks, and review sensitive actions.",
+  "minimum_chrome_version": "120",
+  "permissions": ["activeTab", "scripting", "storage", "sidePanel"],
+  "host_permissions": ["http://127.0.0.1/*", "http://localhost/*"],
+  "optional_host_permissions": ["https://*/*", "http://*/*"],
+  "background": {"service_worker": "background.js", "type": "module"},
+  "action": {"default_title": "Open Orbit"},
+  "side_panel": {"default_path": "panel.html"},
+  "icons": {"16": "icons/icon16.png", "48": "icons/icon48.png", "128": "icons/icon128.png"},
+  "content_security_policy": {"extension_pages": "script-src 'self'; object-src 'none'; connect-src http://127.0.0.1:* http://localhost:*"}
+}

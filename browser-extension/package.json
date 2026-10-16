@@ -1,0 +1,14 @@
+{
+  "name": "orbit-local-browser-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/core.test.js",
+    "test:browser": "node tests/browser.test.js",
+    "package": "node scripts/package.js"
+  },
+  "devDependencies": {
+    "playwright": "1.58.2"
+  }
+}
